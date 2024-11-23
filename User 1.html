@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User 1</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Hirav</h1>
+      <pre id="messages" class="messages"></pre>
+      <div class="input-row">
+        <input
+          type="text"
+          id="messageBox"
+          placeholder="Type your message here"
+          class="message-box"
+        />
+        <button id="send" title="Send Message!" class="send-btn">Send</button>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const username = "Hirav";
+        const sendBtn = document.querySelector("#send");
+        const messages = document.querySelector("#messages");
+        const messageBox = document.querySelector("#messageBox");
+
+        let ws;
+
+        function showMessage(message) {
+          console.log(message);
+
+          messages.textContent += `\n\n${message}`;
+          messages.scrollTop = messages.scrollHeight;
+          messageBox.value = "";
+        }
+
+        function init() {
+          if (ws) {
+            ws.onerror = ws.onopen = ws.onclose = null;
+            ws.close();
+          }
+
+          ws = new WebSocket("ws://localhost:6969");
+          ws.onopen = () => {
+            console.log("Connection opened!");
+          };
+          ws.onmessage = ({ data }) => showMessage(data);
+          ws.onclose = function () {
+            ws = null;
+          };
+        }
+
+        function sendMessage() {
+          if (!ws) {
+            showMessage("No WebSocket connection :(");
+            return;
+          }
+
+          const message = `${username}: ${messageBox.value}`;
+          ws.send(message);
+          showMessage(message);
+        }
+
+        sendBtn.onclick = sendMessage;
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            sendMessage();
+          }
+        });
+
+        init();
+      })();
+    </script>
+  </body>
+</html>
